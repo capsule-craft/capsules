@@ -113,14 +113,6 @@ async function fetchSuiCoinsForAddress(address: string) {
   return coins.data;
 }
 
-export async function createAsyncValue(): Promise<string> {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve('Hello, world!');
-    }, 1000);
-  });
-}
-
 export async function getAddress(env_path: string): Promise<string> {
   const keypair = await loadKeypair(env_path);
   const address = normalizeSuiAddress(keypair.getPublicKey().toSuiAddress());

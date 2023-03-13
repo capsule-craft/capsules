@@ -68,6 +68,8 @@ module sui_examples::coin {
 
     /// Create a new currency type `T` as and return `TreasuryCap<T>` and `Type<T>` metadata
     /// object to the caller.
+    /// Note that the default sui::coin module uses one-time-witnesses to guarantee that these are
+    /// singleton objects, whereas we use abstract types to ensure that Coin<T> is unique per type `T`.
     public fun create_currency<T: drop>(
         witness: T,
         abstract_type: &mut AbstractType,
@@ -98,13 +100,12 @@ module sui_examples::coin {
 
         let schema_fields = ascii2::vec_bytes_to_vec_strings(METADATA_SCHEMA);
         let schema = schema::create_(schema_fields, ctx);
-        let schema_id = schema::into_schema_id(&schema);
-        schema::return_and_freeze(schema);
 
-        let owner = tx_authority::type_into_address<Witness>();
+        let witness = tx_authority::type_into_address<Witness>();
+        let sender = tx_context::sender(ctx);
 
-        abstract_type::create<Coin<Witness>>(&mut receipt, option::some(owner), schema_id, ctx);
-        transfer::transfer(receipt, tx_context::sender(ctx));
+        abstract_type::create<Coin<Witness>>(&mut receipt, vector[witness, sender], schema, ctx);
+        transfer::transfer(receipt, sender);
     }
 
     // The schema is statically embedded into this package here
